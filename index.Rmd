@@ -69,6 +69,24 @@ test <- testTransformed[inTest,]
 
 # Build model & predict
 modelFit <- train(classe ~ ., data = training, method="lm")
-predictions <- predict(modelFit, newdata=test)
-predictions
+predictions <- predict(modelFit, newdata=cv)
 ```
+
+## Make prediction
+Since in previous steps, we only work with real number, in this step, we must convert numbers into integer and then
+finally convert them to integers
+
+```{r eval=FALSE}
+round(predictions)
+```
+
+## Estimate of sample error
+```{r eval=FALSE}
+predictions <- round(predict(modelFit, newdata=training))
+sum(predictions == training$classe) / length(predictions)
+predictions <- round(predict(modelFit, newdata=cv))
+sum(predictions == cv$classe) / length(predictions)
+```
+
+The prediction accuracy on the training dataset and Cross-validation data set are 99.63% and 99.76%, respectively.
+I would expect the accuracy on the test dataset to be around the same.

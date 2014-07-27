@@ -114,8 +114,20 @@ test &lt;- testTransformed[inTest,]
 
 # Build model &amp; predict
 modelFit &lt;- train(classe ~ ., data = training, method=&quot;lm&quot;)
-predictions &lt;- predict(modelFit, newdata=test)
-predictions</code></pre>
+predictions &lt;- predict(modelFit, newdata=cv)</code></pre>
+</div>
+<div id="make-prediction" class="section level2">
+<h2>Make prediction</h2>
+<p>Since in previous steps, we only work with real number, in this step, we must convert numbers into integer and then finally convert them to integers</p>
+<pre class="r"><code>round(predictions)</code></pre>
+</div>
+<div id="estimate-of-sample-error" class="section level2">
+<h2>Estimate of sample error</h2>
+<pre class="r"><code>predictions &lt;- round(predict(modelFit, newdata=training))
+sum(predictions == training$classe) / length(predictions)
+predictions &lt;- round(predict(modelFit, newdata=cv))
+sum(predictions == cv$classe) / length(predictions)</code></pre>
+<p>The prediction accuracy on the training dataset and Cross-validation data set are 99.63% and 99.76%, respectively. I would expect the accuracy on the test dataset to be around the same.</p>
 </div>
 </div>
 
