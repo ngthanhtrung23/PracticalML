@@ -1,0 +1,74 @@
+Excercise Manner Prediction
+===========================
+
+## Data cleaning
+First, the data is downloaded from the Internet using library RCurl
+```{r eval=FALSE}
+library(RCurl)
+
+# Read training data
+trainingFilename <- 'pml-training.csv'
+
+if (!file.exists(trainingFilename)) {
+    url <- getURL('https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv')
+    trainData <- read.csv(text = url)
+} else {
+    trainData <- read.csv(trainingFilename, header=T, sep=',', skip=0, nrows=19623)
+}
+```
+
+The testing data set is read similarly
+
+Then, the data is cleaned by transforming into all numeric (so that it can later be used with PCA). I also removed all
+the near zero columns and NAs:
+
+```{r eval=FALSE}
+# Convert data to all numeric
+for (col in 1:dim(trainData)[2]) {
+    if (!is.null(levels(trainData[,col]))) {
+        trainData[,col] = as.numeric(trainData[,col])
+        testData[,col] = as.numeric(testData[,col])
+    }
+}
+
+# Remove near zeros columns
+nsv <- nearZeroVar(trainData, saveMetrics=T)
+trainData <- data.frame(trainData[,!nsv$nzv])
+testData <- data.frame(testData[,!nsv$nzv])
+
+# Remove columns with NA
+goodColumns <- colSums(is.na(trainData)) == 0
+trainData <- trainData[, goodColumns]
+testData <- testData[, goodColumns]
+```
+
+## Data Preprocessing
+The data goes through centering, scaling and PCA with the help of caret library:
+```{r eval=FALSE}
+# Load libraries & set seed
+library(caret)
+set.seed(1234)
+
+# Transform data using center, scaling & pca
+preProc <- preProcess(trainData, method=c("center", "scale", "pca"))
+trainTransformed <- predict(preProc, trainData)
+testTransformed <- predict(preProc, testData)
+```
+
+## Prediction model
+Finally, a prediction model is built
+```{r eval=FALSE}
+
+# Split data for training & CV
+inTrain <- createDataPartition(y=trainTransformed$classe, p = 0.3, list = F)
+training <- trainTransformed[inTrain,]
+cv <- trainTransformed[-inTrain,]
+inTest <- createDataPartition(y=testTransformed$problem_id, p = 1, list = F)
+dim(training)
+test <- testTransformed[inTest,]
+
+# Build model & predict
+modelFit <- train(classe ~ ., data = training, method="lm")
+predictions <- predict(modelFit, newdata=test)
+predictions
+```

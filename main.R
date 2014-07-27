@@ -20,9 +20,6 @@ if (!file.exists(testingFilename)) {
     testData <- read.csv(testingFilename, header=T, sep=',', skip=0, nrows=21)
 }
 
-# Rename "problem_id" to "classe". Since we do not sort testData, problem_id = 1..20 and is not important
-names(testData)[names(testData) == "problem_id"] <- "classe"
-
 # Convert data to all numeric
 for (col in 1:dim(trainData)[2]) {
     if (!is.null(levels(trainData[,col]))) {
@@ -47,13 +44,25 @@ testData <- testData[, goodColumns]
 
 # Transform data using center, scaling & pca
 preProc <- preProcess(trainData, method=c("center", "scale", "pca"))
+
+problem_id <- testData$problem_id
+names(testData)[names(testData) == 'problem_id'] <- 'classe'
+
 trainTransformed <- predict(preProc, trainData)
 testTransformed <- predict(preProc, testData)
 
-trainTransformed$classe <- factor(trainData$classe)
-testTransformed$classe <- rep(NA, 20)
+trainTransformed$classe <- trainData$classe
+testTransformed$problem_id <- problem_id
+
+# Split data for training & CV
+inTrain <- createDataPartition(y=trainTransformed$classe, p = 0.3, list = F)
+training <- trainTransformed[inTrain,]
+cv <- trainTransformed[-inTrain,]
+inTest <- createDataPartition(y=testTransformed$problem_id, p = 1, list = F)
+dim(training)
+test <- testTransformed[inTest,]
 
 # Build model & predict
-modelFit <- train(classe ~ ., data = trainTransformed, method="rf")
-predictions <- predict(modelFit, newdata=testTransformed)
+modelFit <- train(classe ~ ., data = training, method="lm")
+predictions <- predict(modelFit, newdata=test)
 predictions
