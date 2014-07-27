@@ -88,5 +88,5 @@ predictions <- round(predict(modelFit, newdata=cv))
 sum(predictions == cv$classe) / length(predictions)
 ```
 
-The prediction accuracy on the training dataset and Cross-validation data set are 99.63% and 99.76%, respectively.
-I would expect the accuracy on the test dataset to be around the same.
+The prediction accuracy on the training dataset and Cross-validation data set are 79.63% and 72.37%, respectively.
+I would expect the accuracy on the test dataset to be around the same (70-80%).
